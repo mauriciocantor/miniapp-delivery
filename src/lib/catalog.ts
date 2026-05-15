@@ -1,0 +1,58 @@
+import type { Product } from './types';
+
+export const products: Product[] = [
+  {
+    id: '1',
+    name: 'Hamburguesa Clásica',
+    description: 'Carne angus, lechuga, tomate y salsa especial',
+    price: 18500,
+    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=300&h=200&fit=crop',
+    category: 'Hamburguesas',
+    rating: 4.8,
+  },
+  {
+    id: '2',
+    name: 'Pizza Margherita',
+    description: 'Tomate, mozzarella fresca y albahaca',
+    price: 24000,
+    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=300&h=200&fit=crop',
+    category: 'Pizzas',
+    rating: 4.6,
+  },
+  {
+    id: '3',
+    name: 'Pollo BBQ',
+    description: 'Pollo a la parrilla con salsa BBQ casera',
+    price: 21000,
+    image: 'https://images.unsplash.com/photo-1598514982901-3c52e6e78dc1?w=300&h=200&fit=crop',
+    category: 'Pollos',
+    rating: 4.7,
+  },
+  {
+    id: '4',
+    name: 'Tacos de Carne',
+    description: 'Tres tacos con carne asada, cebolla y cilantro',
+    price: 16000,
+    image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=300&h=200&fit=crop',
+    category: 'Tacos',
+    rating: 4.5,
+  },
+  {
+    id: '5',
+    name: 'Sushi Roll',
+    description: '8 piezas de roll de salmón con aguacate',
+    price: 32000,
+    image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=300&h=200&fit=crop',
+    category: 'Sushi',
+    rating: 4.9,
+  },
+  {
+    id: '6',
+    name: 'Ensalada César',
+    description: 'Lechuga romana, crutones, parmesano y aderezo césar',
+    price: 14000,
+    image: 'https://images.unsplash.com/photo-1546793665-c74683f339c1?w=300&h=200&fit=crop',
+    category: 'Ensaladas',
+    rating: 4.4,
+  },
+];
