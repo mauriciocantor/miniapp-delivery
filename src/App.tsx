@@ -51,16 +51,46 @@ export default function App() {
   }
 
   async function handleCheckout() {
-    setPaying(true);
-    await new Promise(r => setTimeout(r, 1500));
-    await SuperAppSDK.ui.showAlert(
-      '¡Pedido confirmado!',
-      'Tu pedido está siendo preparado. Tiempo estimado: 30 min.'
+  setPaying(true);
+  try {
+    // Esperar a que el SDK esté disponible
+    let attempts = 0;
+    while (!(window as any).SuperApp && attempts < 10) {
+      await new Promise(r => setTimeout(r, 200));
+      attempts++;
+    }
+
+    if (!(window as any).SuperApp) {
+      await (window as any).SuperApp?.ui?.showToast('SDK no disponible');
+      setPaying(false);
+      return;
+    }
+
+    const result = await (window as any).SuperApp.payments.charge(
+      total,
+      'COP',
+      `Pedido de ${cart.length} producto(s) · Super Delivery`
     );
-    setCart([]);
-    setView('success');
+
+    console.log('Resultado pago:', JSON.stringify(result));
+
+    if (result && result.success === true) {
+      await (window as any).SuperApp.ui.showToast(
+        `Pago exitoso · ${result.transaction_id}`
+      );
+      setCart([]);
+      setView('success');
+    } else {
+      const errMsg = result?.error || 'Pago no completado';
+      await (window as any).SuperApp.ui.showToast(errMsg);
+    }
+  } catch (e) {
+    console.error('Error pago:', e);
+    await (window as any).SuperApp?.ui?.showToast('Error al procesar el pago');
+  } finally {
     setPaying(false);
   }
+}
 
   const total = cart.reduce(
     (sum, i) => sum + i.product.price * i.quantity, 0
