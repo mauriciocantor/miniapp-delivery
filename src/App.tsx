@@ -9,7 +9,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [view, setView] = useState<View>('catalog');
-  const [loading, setLoading] = useState(true);
+  const [loading/* , setLoading */] = useState(true);
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
