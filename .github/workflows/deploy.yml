@@ -51,10 +51,12 @@ jobs:
         run: |
           wrangler r2 object put superapp-bundles/miniapp-delivery/index.html \
             --file dist/index.html \
-            --content-type "text/html"
+            --content-type "text/html" \
+            --remote
           wrangler r2 object put superapp-bundles/miniapp-delivery/bundle.js \
             --file dist/bundle.js \
-            --content-type "application/javascript"
+            --content-type "application/javascript" \
+            --remote
 
       - name: Notificar al registry
         run: |
