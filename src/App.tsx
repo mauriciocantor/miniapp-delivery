@@ -92,6 +92,22 @@ export default function App() {
   }
 }
 
+async function handleGetLocation() {
+  try {
+    const loc = await (window as any).SuperApp.location.get();
+    if (loc.error) {
+      await (window as any).SuperApp.ui.showToast(loc.error);
+    } else {
+      await (window as any).SuperApp.ui.showAlert(
+        'Tu ubicación',
+        `Lat: ${loc.lat.toFixed(4)}\nLng: ${loc.lng.toFixed(4)}\nPrecisión: ${loc.accuracy?.toFixed(0)}m`
+      );
+    }
+  } catch (e) {
+    await (window as any).SuperApp.ui.showToast('Error obteniendo ubicación');
+  }
+}
+
   const total = cart.reduce(
     (sum, i) => sum + i.product.price * i.quantity, 0
   );
@@ -174,6 +190,27 @@ export default function App() {
           <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12, color: '#1a1a2e' }}>
             Menú del día
           </h2>
+          <button
+            onClick={handleGetLocation}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: '#009688',
+              color: 'white',
+              border: 'none',
+              borderRadius: '12px',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginBottom: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+            }}
+          >
+            📍 Ver mi ubicación
+          </button>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {products.map(product => (
               <div key={product.id} style={{
