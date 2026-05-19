@@ -43,29 +43,6 @@ export default function App() {
     };
   }, []);
 
-  (window as any).SuperApp.getOpenUserInfo({
-  success: (res: any) => {
-    console.log('User res:', JSON.stringify(res));
-    setUser(res);
-    setLoading(false);
-  },
-  fail: (err: any) => {
-    console.error('Auth fail:', JSON.stringify(err));
-    // Fallback para que no quede cargando
-    setUser({ 
-      id: 'usr_001', 
-      name: 'Usuario', 
-      email: '', 
-      avatar_url: '', 
-      role: 'user' 
-    });
-    setLoading(false);
-  },
-  complete: () => {
-    console.log('Auth complete');
-    setLoading(false);
-  }
-});
 
   function addToCart(product: Product) {
     setCart(prev => {
@@ -79,7 +56,11 @@ export default function App() {
       }
       return [...prev, { product, quantity: 1 }];
     });
-    SuperAppSDK.ui.showToast(`${product.name} agregado al carrito`);
+    (window as any).SuperApp?.showToast({
+      content: `${product.name} agregado al carrito`,
+      type: 'success',
+      duration: 2000,
+    });
   }
 
   /* function removeFromCart(productId: string) {
