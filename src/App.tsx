@@ -106,21 +106,23 @@ export default function App() {
     });
   }
 
-async function handleGetLocation() {
-  try {
-    const loc = await (window as any).SuperApp.location.get();
-    if (loc.error) {
-      await (window as any).SuperApp.ui.showToast(loc.error);
-    } else {
-      await (window as any).SuperApp.ui.showAlert(
-        'Tu ubicación',
-        `Lat: ${loc.lat.toFixed(4)}\nLng: ${loc.lng.toFixed(4)}\nPrecisión: ${loc.accuracy?.toFixed(0)}m`
-      );
-    }
-  } catch (e) {
-    await (window as any).SuperApp.ui.showToast('Error obteniendo ubicación');
+  async function handleGetLocation() {
+    (window as any).SuperApp.getLocation({
+      type: 'wgs84',
+      success: (res: any) => {
+        (window as any).SuperApp.alert({
+          title: 'Tu ubicación',
+          content: `Lat: ${res.lat?.toFixed(4)}\nLng: ${res.lng?.toFixed(4)}\nPrecisión: ${res.accuracy?.toFixed(0)}m`,
+        });
+      },
+      fail: (err: any) => {
+        (window as any).SuperApp.showToast({
+          content: err.errorMessage || 'Error obteniendo ubicación',
+          type: 'fail',
+        });
+      },
+    });
   }
-}
 
   const total = cart.reduce(
     (sum, i) => sum + i.product.price * i.quantity, 0
