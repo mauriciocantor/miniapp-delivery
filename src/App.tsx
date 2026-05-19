@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import SuperAppSDK from './lib/superapp';
 import type { Product, CartItem, User } from './lib/types';
 import { products } from './lib/catalog';
 
