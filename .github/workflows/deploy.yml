@@ -60,13 +60,11 @@ jobs:
 
       - name: Notificar al registry
         run: |
+          VERSION=$(echo "${{ github.sha }}" | cut -c1-7)
           curl -X PUT ${{ secrets.API_URL }}/registry/com.superapp.delivery.real \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.ADMIN_TOKEN }}" \
-            -d "{
-              \"version\": \"${{ github.sha }}\",
-              \"bundle_url\": \"https://pub-c13c03b06eb04ba584a460bb1e118eb5.r2.dev/miniapp-delivery/index.html\"
-            }"
+            -d "{\"bundle_url\": \"https://pub-c13c03b06eb04ba584a460bb1e118eb5.r2.dev/miniapp-delivery/index.html\", \"version\": \"$VERSION\"}"
 
       - name: Deploy exitoso
         run: |
