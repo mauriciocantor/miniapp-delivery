@@ -141,7 +141,7 @@ async function handleGetLocation() {
               Hola, {user?.name.split(' ')[0]} 👋
             </div>
             <div style={{ color: 'white', fontWeight: 700, fontSize: 18 }}>
-              Super Delivery v2
+              Super Delivery Claro
             </div>
           </div>
           {view === 'catalog' && (
