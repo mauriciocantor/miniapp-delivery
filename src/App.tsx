@@ -13,34 +13,34 @@ export default function App() {
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
-    const waitForSDK = async () => {
-      let attempts = 0;
-      while (!(window as any).SuperApp && attempts < 20) {
-        await new Promise(r => setTimeout(r, 300));
-        attempts++;
-      }
-
-      // Timeout de seguridad
-      const timeout = setTimeout(() => {
-        setLoading(false);
-      }, 5000);
-
-      (window as any).SuperApp.ready(() => {
-        (window as any).SuperApp.getOpenUserInfo({
-          success: (res: any) => {
-            clearTimeout(timeout);
-            setUser(res);
-            setLoading(false);
-          },
-          fail: (err: any) => {
-            clearTimeout(timeout);
-            console.error('Auth fail:', err);
-            setLoading(false);
-          },
-        });
+    const init = () => {
+      (window as any).SuperApp.getOpenUserInfo({
+        success: (res: any) => {
+          setUser(res);
+          setLoading(false);
+        },
+        fail: () => setLoading(false),
       });
     };
-    waitForSDK();
+
+    // Polling hasta que el SDK esté listo
+    const interval = setInterval(() => {
+      if ((window as any).SuperApp?.getOpenUserInfo) {
+        clearInterval(interval);
+        init();
+      }
+    }, 100);
+
+    // Timeout de 8 segundos
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      setLoading(false);
+    }, 8000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
   }, []);
 
   (window as any).SuperApp.getOpenUserInfo({
