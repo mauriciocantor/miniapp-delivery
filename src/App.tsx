@@ -9,7 +9,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [view, setView] = useState<View>('catalog');
-  const [loading/* , setLoading */] = useState(true);
+  const [loading, setLoading ] = useState(true);
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
@@ -20,22 +20,52 @@ export default function App() {
         attempts++;
       }
 
-      // Usar JSAPI ready
-      (window as any).SuperApp.ready(() => {
-        // Obtener usuario con JSAPI
-        (window as any).SuperApp.getOpenUserInfo({
-          success: (res: any) => setUser(res),
-          fail: (err: any) => console.error('Auth error:', err.errorMessage),
-        });
+      // Timeout de seguridad
+      const timeout = setTimeout(() => {
+        setLoading(false);
+      }, 5000);
 
-        // Escuchar eventos del host
-        (window as any).SuperApp.on('payment_result', (data: any) => {
-          console.log('Resultado de pago:', data);
+      (window as any).SuperApp.ready(() => {
+        (window as any).SuperApp.getOpenUserInfo({
+          success: (res: any) => {
+            clearTimeout(timeout);
+            setUser(res);
+            setLoading(false);
+          },
+          fail: (err: any) => {
+            clearTimeout(timeout);
+            console.error('Auth fail:', err);
+            setLoading(false);
+          },
         });
       });
     };
     waitForSDK();
   }, []);
+
+  (window as any).SuperApp.getOpenUserInfo({
+  success: (res: any) => {
+    console.log('User res:', JSON.stringify(res));
+    setUser(res);
+    setLoading(false);
+  },
+  fail: (err: any) => {
+    console.error('Auth fail:', JSON.stringify(err));
+    // Fallback para que no quede cargando
+    setUser({ 
+      id: 'usr_001', 
+      name: 'Usuario', 
+      email: '', 
+      avatar_url: '', 
+      role: 'user' 
+    });
+    setLoading(false);
+  },
+  complete: () => {
+    console.log('Auth complete');
+    setLoading(false);
+  }
+});
 
   function addToCart(product: Product) {
     setCart(prev => {
