@@ -1,0 +1,72 @@
+name: Deploy Mini-App
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Corregir index.html
+        run: |
+          cat > dist/index.html << 'EOF'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>Super Delivery</title>
+            </head>
+            <body>
+              <div id="root"></div>
+              <script src="./bundle.js"></script>
+            </body>
+          </html>
+          EOF
+
+      - name: Instalar Wrangler
+        run: npm install -g wrangler
+
+      - name: Subir bundle a Cloudflare R2
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          wrangler r2 object put superapp-bundles/miniapp-delivery/index.html \
+            --file dist/index.html \
+            --content-type "text/html"
+          wrangler r2 object put superapp-bundles/miniapp-delivery/bundle.js \
+            --file dist/bundle.js \
+            --content-type "application/javascript"
+
+      - name: Notificar al registry
+        run: |
+          curl -X PUT ${{ secrets.API_URL }}/registry/com.superapp.delivery.real \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.ADMIN_TOKEN }}" \
+            -d "{
+              \"version\": \"${{ github.sha }}\",
+              \"bundle_url\": \"https://pub-c13c03b06eb04ba584a460bb1e118eb5.r2.dev/miniapp-delivery/index.html\"
+            }"
+
+      - name: Deploy exitoso
+        run: |
+          echo "✅ Mini-app desplegada"
+          echo "🌐 URL: https://pub-c13c03b06eb04ba584a460bb1e118eb5.r2.dev/miniapp-delivery/index.html"
