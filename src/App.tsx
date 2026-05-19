@@ -13,10 +13,28 @@ export default function App() {
   const [paying, setPaying] = useState(false);
 
   useEffect(() => {
-    SuperAppSDK.auth.getUser().then((u: User) => {
-      setUser(u);
-      setLoading(false);
-    });
+    const waitForSDK = async () => {
+      let attempts = 0;
+      while (!(window as any).SuperApp && attempts < 20) {
+        await new Promise(r => setTimeout(r, 300));
+        attempts++;
+      }
+
+      // Usar JSAPI ready
+      (window as any).SuperApp.ready(() => {
+        // Obtener usuario con JSAPI
+        (window as any).SuperApp.getOpenUserInfo({
+          success: (res: any) => setUser(res),
+          fail: (err: any) => console.error('Auth error:', err.errorMessage),
+        });
+
+        // Escuchar eventos del host
+        (window as any).SuperApp.on('payment_result', (data: any) => {
+          console.log('Resultado de pago:', data);
+        });
+      });
+    };
+    waitForSDK();
   }, []);
 
   function addToCart(product: Product) {
@@ -51,46 +69,32 @@ export default function App() {
   }
 
   async function handleCheckout() {
-  setPaying(true);
-  try {
-    // Esperar a que el SDK esté disponible
-    let attempts = 0;
-    while (!(window as any).SuperApp && attempts < 10) {
-      await new Promise(r => setTimeout(r, 200));
-      attempts++;
-    }
-
-    if (!(window as any).SuperApp) {
-      await (window as any).SuperApp?.ui?.showToast('SDK no disponible');
-      setPaying(false);
-      return;
-    }
-
-    const result = await (window as any).SuperApp.payments.charge(
-      total,
-      'COP',
-      `Pedido de ${cart.length} producto(s) · Super Delivery`
-    );
-
-    console.log('Resultado pago:', JSON.stringify(result));
-
-    if (result && result.success === true) {
-      await (window as any).SuperApp.ui.showToast(
-        `Pago exitoso · ${result.transaction_id}`
-      );
-      setCart([]);
-      setView('success');
-    } else {
-      const errMsg = result?.error || 'Pago no completado';
-      await (window as any).SuperApp.ui.showToast(errMsg);
-    }
-  } catch (e) {
-    console.error('Error pago:', e);
-    await (window as any).SuperApp?.ui?.showToast('Error al procesar el pago');
-  } finally {
-    setPaying(false);
+    setPaying(true);
+    (window as any).SuperApp.tradePay({
+      amount: total,
+      currency: 'COP',
+      description: `Pedido de ${cart.length} producto(s) · Super Delivery`,
+      orderId: `order_${Date.now()}`,
+      success: async (res: any) => {
+        (window as any).SuperApp.showToast({
+          content: `Pago exitoso · ${res.transaction_id}`,
+          type: 'success',
+          duration: 3000,
+        });
+        setCart([]);
+        setView('success');
+        setPaying(false);
+      },
+      fail: (err: any) => {
+        (window as any).SuperApp.showToast({
+          content: err.errorMessage || 'Pago cancelado',
+          type: 'fail',
+        });
+        setPaying(false);
+      },
+      complete: () => setPaying(false),
+    });
   }
-}
 
 async function handleGetLocation() {
   try {
